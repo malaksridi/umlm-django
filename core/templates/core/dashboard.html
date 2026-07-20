@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="refresh" content="60">
+<title>UMLM — Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0f1115;
+    --panel: #161a21;
+    --panel-border: #262b34;
+    --text: #e8eaed;
+    --muted: #8b93a1;
+    --ok: #4ade80;
+    --warn: #f5a94e;
+    --danger: #f16565;
+    --accent: #6ea8fe;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    padding: 40px 24px 80px;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  h1 { font-size: 28px; font-weight: 700; margin: 0 0 6px; }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+  .kpi {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 18px;
+  }
+  .kpi-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 30px;
+    font-weight: 500;
+  }
+  .kpi-label { color: var(--muted); font-size: 12px; margin-top: 8px; }
+  .kpi.warn .kpi-value { color: var(--warn); }
+  .kpi.danger .kpi-value { color: var(--danger); }
+
+  .section-title {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin: 32px 0 12px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  th, td { text-align: left; padding: 12px 16px; font-size: 14px; }
+  th {
+    color: var(--muted);
+    font-weight: 500;
+    font-size: 12px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--panel-border);
+  }
+  tr:not(:last-child) td { border-bottom: 1px solid var(--panel-border); }
+
+  .pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    margin-right: 6px;
+  }
+  .pill.ok { background: rgba(74,222,128,0.12); color: var(--ok); }
+  .pill.warn { background: rgba(245,169,78,0.12); color: var(--warn); }
+  .pill.danger { background: rgba(241,101,101,0.12); color: var(--danger); }
+  .pill.accent { background: rgba(110,168,254,0.12); color: var(--accent); }
+  .empty { color: var(--muted); font-size: 13px; padding: 16px; }
+
+  .alert-row { border-left: 3px solid var(--danger); }
+  .alert-type { font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">UMLM — UPS Module Lifecycle Manager</div>
+  <h1>Dashboard</h1>
+  <div class="sub">Vue globale de l'état des modules — dernière actualisation : {{ last_updated|date:"d/m/Y H:i" }} (rafraîchi automatiquement)</div>
+
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-value">{{ total_projects }}</div>
+      <div class="kpi-label">Projets</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value">{{ total_project_modules }}</div>
+      <div class="kpi-label">Modules installés</div>
+    </div>
+    <div class="kpi warn">
+      <div class="kpi-value">{{ en_retard }}</div>
+      <div class="kpi-label">En retard</div>
+    </div>
+    <div class="kpi danger">
+      <div class="kpi-value">{{ absents }}</div>
+      <div class="kpi-label">Absents</div>
+    </div>
+  </div>
+
+  <div class="section-title">Vue par projet</div>
+  <table>
+    <thead><tr><th>Projet</th><th>Modules</th></tr></thead>
+    <tbody>
+      {% for project in projects %}
+      <tr>
+        <td>{{ project.name }}</td>
+        <td>
+          {% for pm in project.project_modules.all %}
+            {% if pm.status == "up_to_date" %}
+              <span class="pill ok">{{ pm.module.name }} : à jour</span>
+            {% elif pm.status == "behind" %}
+              <span class="pill warn">{{ pm.module.name }} : en retard</span>
+            {% elif pm.status == "non_integre" %}
+              <span class="pill danger">{{ pm.module.name }} : absent</span>
+            {% else %}
+              <span class="pill accent">{{ pm.module.name }} : {{ pm.status }}</span>
+            {% endif %}
+          {% empty %}
+            <span class="empty">Aucun module</span>
+          {% endfor %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="2" class="empty">Aucun projet — lance `python manage.py import_data`</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="section-title">Vue par module</div>
+  <table>
+    <thead><tr><th>Module</th><th>Utilisé dans</th></tr></thead>
+    <tbody>
+      {% for module in modules %}
+      <tr>
+        <td>{{ module.name }} <span class="pill accent">{{ module.criticality }}</span></td>
+        <td>
+          {% for pm in module.project_modules.all %}
+            <span class="pill">{{ pm.project.name }}</span>
+          {% empty %}
+            <span class="empty">Non intégré</span>
+          {% endfor %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="2" class="empty">Aucun module</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="section-title">Alertes récentes</div>
+  <table>
+    <thead><tr><th>Type</th><th>Projet / Module</th><th>Canal</th><th>Date</th></tr></thead>
+    <tbody>
+      {% for alert in recent_alerts %}
+      <tr class="alert-row">
+        <td class="alert-type">{{ alert.type }}</td>
+        <td>{{ alert.mise_a_jour.project_module.project.name }} / {{ alert.mise_a_jour.project_module.module.name }}</td>
+        <td><span class="pill">{{ alert.channel }}</span></td>
+        <td>{{ alert.sent_at|date:"d/m/Y H:i" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" class="empty">Aucune alerte pour l'instant</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</div>
+</body>
+</html>

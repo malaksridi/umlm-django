@@ -1,0 +1,12 @@
+[
+    {
+        "name": "UPS",
+        "local_path": "/var/www/ups",
+        "reference_branch": "main"
+    },
+    {
+        "name": "UMS",
+        "local_path": "/var/www/ums",
+        "reference_branch": "main"
+    }
+]
