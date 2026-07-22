@@ -117,3 +117,17 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'          # ou le serveur SMTP de l'entreprise
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'EMAIL_REDACTED '      # l'adresse qui ENVOIE les alertes
+EMAIL_HOST_PASSWORD = 'xxxx xxxx xxxx xxxx'      # un "mot de passe d'application", PAS ton vrai mot de passe
+DEFAULT_FROM_EMAIL = 'UMLM Alertes <EMAIL_REDACTED >'
+
+# Liste des emails du staff qui doivent recevoir les alertes critiques
+STAFF_ALERT_EMAILS = [
+    'chef-de-projet@nachdit.com',
+    'direction-technique@nachdit.com',
+]

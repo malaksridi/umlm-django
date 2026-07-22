@@ -5,110 +5,207 @@
 <meta http-equiv="refresh" content="60">
 <title>UMLM — Dashboard</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
   :root {
-    --bg: #0f1115;
-    --panel: #161a21;
-    --panel-border: #262b34;
-    --text: #e8eaed;
-    --muted: #8b93a1;
-    --ok: #4ade80;
-    --warn: #f5a94e;
-    --danger: #f16565;
-    --accent: #6ea8fe;
+    --bg: #0c0e13;
+    --bg-image: none;
+    --panel: #14171f;
+    --panel-border: rgba(255,255,255,0.07);
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.24);
+    --text: #eceef2;
+    --muted: #8b91a1;
+    --ok: #4ade80; --ok-bg: rgba(74,222,128,0.12);
+    --warn: #f5a94e; --warn-bg: rgba(245,169,78,0.12);
+    --danger: #f16565; --danger-bg: rgba(241,101,101,0.12);
+    --accent: #7c9cff; --accent-bg: rgba(124,156,255,0.12);
+  }
+  html.light {
+    --bg: #eef0f7;
+    --bg-image: radial-gradient(1200px 600px at 15% -10%, #dde3fb 0%, transparent 55%),
+                radial-gradient(1000px 700px at 100% 100%, #e4e8fa 0%, transparent 55%);
+    --panel: rgba(255,255,255,0.85);
+    --panel-border: rgba(30,20,60,0.07);
+    --shadow: 0 1px 2px rgba(30,20,60,0.04), 0 6px 20px rgba(60,70,140,0.07);
+    --text: #1c1e2b;
+    --muted: #666b80;
+    --ok: #0d8a4e; --ok-bg: #e0f7ea;
+    --warn: #b5670a; --warn-bg: #fbedd7;
+    --danger: #c22645; --danger-bg: #fbe4e9;
+    --accent: #4438c9; --accent-bg: #e7e4fa;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    background: var(--bg);
+    background: var(--bg-image), var(--bg);
+    background-attachment: fixed;
     color: var(--text);
     font-family: 'Space Grotesk', sans-serif;
-    padding: 40px 24px 80px;
+    padding: 48px 28px 90px;
+    transition: background 0.25s, color 0.25s;
+    -webkit-font-smoothing: antialiased;
   }
-  .wrap { max-width: 960px; margin: 0 auto; }
+  .wrap { max-width: 980px; margin: 0 auto; position: relative; }
+
+  .top-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+
+  #theme-toggle {
+    background: var(--panel);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--shadow);
+    color: var(--muted);
+    border-radius: 8px;
+    width: 34px;
+    height: 34px;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s, color 0.15s;
+  }
+  #theme-toggle:hover { color: var(--accent); transform: translateY(-1px); }
+
   .eyebrow {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    letter-spacing: 0.12em;
+    font-size: 11px;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--accent);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+    font-weight: 600;
   }
-  h1 { font-size: 28px; font-weight: 700; margin: 0 0 6px; }
-  .sub { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+  h1 {
+    font-size: 30px; font-weight: 700; margin: 0 0 8px; letter-spacing: -0.01em;
+    background: linear-gradient(90deg, var(--text), var(--accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+  html:not(.light) h1 { background: none; -webkit-text-fill-color: initial; color: var(--text); }
+  .sub { color: var(--muted); font-size: 13.5px; margin-bottom: 36px; line-height: 1.5; }
 
   .kpi-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 40px;
+    gap: 14px;
+    margin-bottom: 44px;
   }
   .kpi {
     background: var(--panel);
+    backdrop-filter: blur(10px);
     border: 1px solid var(--panel-border);
-    border-radius: 10px;
-    padding: 18px;
+    box-shadow: var(--shadow);
+    border-radius: 16px;
+    padding: 20px 20px 18px;
+    position: relative;
+    overflow: hidden;
   }
+  .kpi::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--muted);
+    opacity: 0.04;
+    pointer-events: none;
+  }
+  .kpi.warn::before { background: var(--warn); opacity: 0.09; }
+  .kpi.danger::before { background: var(--danger); opacity: 0.09; }
+  .kpi:not(.warn):not(.danger)::before { background: var(--accent); opacity: 0.06; }
   .kpi-value {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 30px;
+    font-size: 32px;
     font-weight: 500;
+    letter-spacing: -0.02em;
+    position: relative;
   }
-  .kpi-label { color: var(--muted); font-size: 12px; margin-top: 8px; }
+  .kpi-label { color: var(--muted); font-size: 12.5px; margin-top: 6px; font-weight: 600; position: relative; }
+  .kpi:not(.warn):not(.danger) .kpi-value { color: var(--accent); }
   .kpi.warn .kpi-value { color: var(--warn); }
   .kpi.danger .kpi-value { color: var(--danger); }
 
   .section-title {
-    font-size: 13px;
+    font-size: 12px;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
     color: var(--muted);
-    margin: 32px 0 12px;
+    margin: 40px 0 14px;
     font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
+  .section-title::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--panel-border);
+  }
+
   table {
     width: 100%;
     border-collapse: collapse;
     background: var(--panel);
+    backdrop-filter: blur(10px);
     border: 1px solid var(--panel-border);
-    border-radius: 10px;
+    box-shadow: var(--shadow);
+    border-radius: 16px;
     overflow: hidden;
   }
-  th, td { text-align: left; padding: 12px 16px; font-size: 14px; }
+  th, td { text-align: left; padding: 14px 18px; font-size: 13.5px; }
   th {
     color: var(--muted);
-    font-weight: 500;
-    font-size: 12px;
+    font-weight: 700;
+    font-size: 11px;
     text-transform: uppercase;
+    letter-spacing: 0.06em;
     border-bottom: 1px solid var(--panel-border);
+    background: var(--accent-bg);
   }
   tr:not(:last-child) td { border-bottom: 1px solid var(--panel-border); }
+  tbody tr { transition: background 0.12s; }
+  tbody tr:hover { background: var(--accent-bg); }
 
   .pill {
-    display: inline-block;
-    padding: 3px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 11px 4px 9px;
     border-radius: 999px;
-    font-size: 12px;
+    font-size: 11.5px;
     font-family: 'IBM Plex Mono', monospace;
-    margin-right: 6px;
+    font-weight: 600;
+    margin: 2px 4px 2px 0;
   }
-  .pill.ok { background: rgba(74,222,128,0.12); color: var(--ok); }
-  .pill.warn { background: rgba(245,169,78,0.12); color: var(--warn); }
-  .pill.danger { background: rgba(241,101,101,0.12); color: var(--danger); }
-  .pill.accent { background: rgba(110,168,254,0.12); color: var(--accent); }
-  .empty { color: var(--muted); font-size: 13px; padding: 16px; }
+  .pill::before {
+    content: "";
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+  .pill.ok { background: var(--ok-bg); color: var(--ok); }
+  .pill.warn { background: var(--warn-bg); color: var(--warn); }
+  .pill.danger { background: var(--danger-bg); color: var(--danger); }
+  .pill.accent { background: var(--accent-bg); color: var(--accent); }
+  .empty { color: var(--muted); font-size: 13px; padding: 18px; font-style: italic; }
 
-  .alert-row { border-left: 3px solid var(--danger); }
-  .alert-type { font-weight: 500; }
+  .alert-row td:first-child { border-left: 3px solid var(--danger); }
+  .alert-type { font-weight: 700; }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <div class="eyebrow">UMLM — UPS Module Lifecycle Manager</div>
-  <h1>Dashboard</h1>
-  <div class="sub">Vue globale de l'état des modules — dernière actualisation : {{ last_updated|date:"d/m/Y H:i" }} (rafraîchi automatiquement)</div>
+  <div class="top-row">
+    <div>
+      <div class="eyebrow">UMLM — UPS Module Lifecycle Manager</div>
+      <h1>Dashboard</h1>
+    </div>
+    <button id="theme-toggle" onclick="toggleTheme()">🌙</button>
+  </div>
+  <div class="sub">Vue globale de l'état des modules — dernière actualisation : {{ last_updated|date:"d/m/Y H:i" }} · rafraîchi automatiquement</div>
 
   <div class="kpi-grid">
     <div class="kpi">
@@ -135,7 +232,7 @@
     <tbody>
       {% for project in projects %}
       <tr>
-        <td>{{ project.name }}</td>
+        <td style="font-weight: 700;">{{ project.name }}</td>
         <td>
           {% for pm in project.project_modules.all %}
             {% if pm.status == "up_to_date" %}
@@ -164,7 +261,7 @@
     <tbody>
       {% for module in modules %}
       <tr>
-        <td>{{ module.name }} <span class="pill accent">{{ module.criticality }}</span></td>
+        <td style="font-weight: 700;">{{ module.name }} <span class="pill accent">{{ module.criticality }}</span></td>
         <td>
           {% for pm in module.project_modules.all %}
             <span class="pill">{{ pm.project.name }}</span>
@@ -188,7 +285,7 @@
         <td class="alert-type">{{ alert.type }}</td>
         <td>{{ alert.mise_a_jour.project_module.project.name }} / {{ alert.mise_a_jour.project_module.module.name }}</td>
         <td><span class="pill">{{ alert.channel }}</span></td>
-        <td>{{ alert.sent_at|date:"d/m/Y H:i" }}</td>
+        <td style="color: var(--muted);">{{ alert.sent_at|date:"d/m/Y H:i" }}</td>
       </tr>
       {% empty %}
       <tr><td colspan="4" class="empty">Aucune alerte pour l'instant</td></tr>
@@ -197,5 +294,27 @@
   </table>
 
 </div>
+
+<script>
+  const toggleBtn = document.getElementById('theme-toggle');
+
+  function applyIcon() {
+    const isLight = document.documentElement.classList.contains('light');
+    toggleBtn.textContent = isLight ? '☀️' : '🌙';
+  }
+
+  if (localStorage.getItem('umlm-theme') === 'light') {
+    document.documentElement.classList.add('light');
+  }
+  applyIcon();
+
+  function toggleTheme() {
+    document.documentElement.classList.toggle('light');
+    const isLight = document.documentElement.classList.contains('light');
+    localStorage.setItem('umlm-theme', isLight ? 'light' : 'dark');
+    applyIcon();
+  }
+</script>
+
 </body>
 </html>
