@@ -276,6 +276,11 @@
     </tbody>
   </table>
 
+  <div class="section-title">Évolution des modules en retard</div>
+  <div style="background: var(--panel); backdrop-filter: blur(10px); border: 1px solid var(--panel-border); box-shadow: var(--shadow); border-radius: 16px; padding: 20px;">
+    <canvas id="historique-chart" height="80"></canvas>
+  </div>
+
   <div class="section-title">Alertes récentes</div>
   <table>
     <thead><tr><th>Type</th><th>Projet / Module</th><th>Canal</th><th>Date</th></tr></thead>
@@ -295,6 +300,47 @@
 
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+  const chartLabels = {{ chart_labels|safe }};
+  const chartValues = {{ chart_values|safe }};
+
+  function drawChart() {
+    const isLight = document.documentElement.classList.contains('light');
+    const gridColor = isLight ? 'rgba(30,20,60,0.06)' : 'rgba(255,255,255,0.06)';
+    const textColor = isLight ? '#666b80' : '#8b91a1';
+    const lineColor = isLight ? '#4438c9' : '#7c9cff';
+
+    if (window.historiqueChart) window.historiqueChart.destroy();
+
+    const ctx = document.getElementById('historique-chart').getContext('2d');
+    window.historiqueChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: chartLabels.length ? chartLabels : ['Aujourd\'hui'],
+        datasets: [{
+          label: 'Modules en retard / absents / divergés',
+          data: chartValues.length ? chartValues : [0],
+          borderColor: lineColor,
+          backgroundColor: lineColor + '22',
+          tension: 0.3,
+          fill: true,
+          pointRadius: 3,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: gridColor }, ticks: { color: textColor, font: { family: 'IBM Plex Mono' } } },
+          y: { grid: { color: gridColor }, ticks: { color: textColor, precision: 0 }, beginAtZero: true },
+        },
+      }
+    });
+  }
+  drawChart();
+</script>
+
 <script>
   const toggleBtn = document.getElementById('theme-toggle');
 
@@ -313,6 +359,7 @@
     const isLight = document.documentElement.classList.contains('light');
     localStorage.setItem('umlm-theme', isLight ? 'light' : 'dark');
     applyIcon();
+    drawChart();
   }
 </script>
 

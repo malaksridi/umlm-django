@@ -1,3 +1,7 @@
+import json
+
+from django.db.models import Count, Q
+from django.db.models.functions import TruncDate
 from django.shortcuts import render
 from django.utils import timezone
 from rest_framework import viewsets
@@ -9,6 +13,27 @@ from core.serializers import (
     ProjectSerializer, ModuleSerializer, ProjectModuleSerializer,
     MiseAJourSerializer, AlertSerializer,
 )
+
+PROBLEMATIC_STATUSES = ["behind", "non_integre", "diverged"]
+
+
+def get_historique_data():
+    """
+    Regroupe les MiseAJour par jour et compte combien de modules étaient
+    en problème (en retard, absent, divergé) ce jour-là.
+    Alimente le graphique d'évolution (section 4.6).
+    """
+    rows = (
+        MiseAJour.objects
+        .filter(status__in=PROBLEMATIC_STATUSES)
+        .annotate(day=TruncDate("scanned_at"))
+        .values("day")
+        .annotate(total=Count("id"))
+        .order_by("day")
+    )
+    labels = [row["day"].strftime("%d/%m") for row in rows]
+    values = [row["total"] for row in rows]
+    return labels, values
 
 
 def dashboard_page(request):
@@ -24,6 +49,7 @@ def dashboard_page(request):
         .select_related("mise_a_jour__project_module__project", "mise_a_jour__project_module__module")
         .order_by("-sent_at")[:10]
     )
+    chart_labels, chart_values = get_historique_data()
 
     context = {
         "projects": projects,
@@ -34,6 +60,8 @@ def dashboard_page(request):
         "en_retard": ProjectModule.objects.filter(status="behind").count(),
         "absents": ProjectModule.objects.filter(status="non_integre").count(),
         "last_updated": timezone.now(),
+        "chart_labels": json.dumps(chart_labels),
+        "chart_values": json.dumps(chart_values),
     }
     return render(request, "core/dashboard.html", context)
 
