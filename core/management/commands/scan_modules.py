@@ -14,7 +14,7 @@ from django.core.mail import send_mail
 from django.core.management.base import BaseCommand
 
 from core.github_service import get_latest_commit, get_local_commit
-from core.models import ProjectModule, Alert
+from core.models import ProjectModule, Alert, User
 
 
 class Command(BaseCommand):
@@ -72,9 +72,9 @@ class Command(BaseCommand):
         return len(alerts_to_create)
 
     def send_alert_email(self, pm: ProjectModule, alert: Alert):
-        staff_emails = getattr(settings, "STAFF_ALERT_EMAILS", [])
+        staff_emails = list(User.objects.exclude(email="").values_list("email", flat=True))
         if not staff_emails:
-            self.stdout.write(self.style.WARNING("    (aucun STAFF_ALERT_EMAILS configuré dans settings.py — email non envoyé)"))
+            self.stdout.write(self.style.WARNING("    (aucun utilisateur avec un email — alerte non envoyée)"))
             return
 
         subject = f"[UMLM] Alerte : {alert.type} — {pm.project.name} / {pm.module.name}"

@@ -1,13 +1,14 @@
+# Destination: core/views.py  (replace the whole file)
 import json
-
-from django.db.models import Count, Q
+from django.db.models import Count
 from django.db.models.functions import TruncDate
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils import timezone
 from rest_framework import viewsets
-from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from .auth import get_current_user
+from .models import User
 from core.models import Project, Module, ProjectModule, MiseAJour, Alert
 from core.serializers import (
     ProjectSerializer, ModuleSerializer, ProjectModuleSerializer,
@@ -36,12 +37,23 @@ def get_historique_data():
     return labels, values
 
 
+def select_user_view(request):
+    if request.method == "POST":
+        request.session["user_id"] = request.POST.get("user_id")
+        request.session.set_expiry(60 * 60 * 24 * 90)  # reste "connecté" 90 jours
+        return redirect("dashboard")
+    users = User.objects.select_related("role").all()
+    return render(request, "core/select_user.html", {"users": users})
+
+
 def dashboard_page(request):
     """
     Vue "page web" (pas API) — affiche le dashboard visuel.
     Section 4.4 du cahier des charges.
-    Conçue pour rester ouverte en continu sur un écran (auto-refresh dans le template).
     """
+    if not get_current_user(request):
+        return redirect("/")
+
     projects = Project.objects.prefetch_related("project_modules__module").all()
     modules = Module.objects.prefetch_related("project_modules__project").all()
     recent_alerts = (
@@ -64,6 +76,11 @@ def dashboard_page(request):
         "chart_values": json.dumps(chart_values),
     }
     return render(request, "core/dashboard.html", context)
+
+
+def logout_view(request):
+    request.session.flush()
+    return redirect("/")
 
 
 class ProjectViewSet(viewsets.ReadOnlyModelViewSet):

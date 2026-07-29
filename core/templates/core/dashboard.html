@@ -83,7 +83,31 @@
     background-clip: text;
   }
   html:not(.light) h1 { background: none; -webkit-text-fill-color: initial; color: var(--text); }
-  .sub { color: var(--muted); font-size: 13.5px; margin-bottom: 36px; line-height: 1.5; }
+  .sub { color: var(--muted); font-size: 13.5px; margin-bottom: 24px; line-height: 1.5; }
+
+  /* --- Menu Gestion --- */
+  .nav-menu {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 36px;
+  }
+  .nav-menu a {
+    text-decoration: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--shadow);
+    padding: 9px 16px;
+    border-radius: 10px;
+    transition: color 0.15s, transform 0.15s;
+  }
+  .nav-menu a:hover { color: var(--accent); transform: translateY(-1px); }
+  .nav-menu a.active { color: var(--accent); background: var(--accent-bg); }
 
   .kpi-grid {
     display: grid;
@@ -206,6 +230,14 @@
     <button id="theme-toggle" onclick="toggleTheme()">🌙</button>
   </div>
   <div class="sub">Vue globale de l'état des modules — dernière actualisation : {{ last_updated|date:"d/m/Y H:i" }} · rafraîchi automatiquement</div>
+
+  <div class="nav-menu">
+    <a href="/dashboard/" class="active">Dashboard</a>
+    <a href="/api/manage/projects/">Projets</a>
+    <a href="/api/manage/modules/">Modules</a>
+    <a href="/api/manage/roles/">Rôles</a>
+    <a href="/api/manage/users/">Utilisateurs</a>
+  </div>
 
   <div class="kpi-grid">
     <div class="kpi">

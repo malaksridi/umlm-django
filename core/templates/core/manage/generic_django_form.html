@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>{{ title }} — UMLM</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  :root {
+    --bg: #0c0e13; --bg-image: none; --panel: #14171f; --panel-border: rgba(255,255,255,0.07);
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.24);
+    --text: #eceef2; --muted: #8b91a1; --accent: #7c9cff; --accent-bg: rgba(124,156,255,0.12);
+    --danger: #f16565;
+  }
+  html.light {
+    --bg: #eef0f7;
+    --bg-image: radial-gradient(1200px 600px at 15% -10%, #dde3fb 0%, transparent 55%),
+                radial-gradient(1000px 700px at 100% 100%, #e4e8fa 0%, transparent 55%);
+    --panel: rgba(255,255,255,0.85); --panel-border: rgba(30,20,60,0.07);
+    --shadow: 0 1px 2px rgba(30,20,60,0.04), 0 6px 20px rgba(60,70,140,0.07);
+    --text: #1c1e2b; --muted: #666b80; --accent: #4438c9; --accent-bg: #e7e4fa; --danger: #c22645;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg-image), var(--bg); background-attachment: fixed;
+    color: var(--text); font-family: 'Space Grotesk', sans-serif; padding: 48px 28px 90px;
+    transition: background 0.25s, color 0.25s; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 480px; margin: 0 auto; }
+  .top-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+  #theme-toggle {
+    background: var(--panel); border: 1px solid var(--panel-border); box-shadow: var(--shadow);
+    color: var(--muted); border-radius: 8px; width: 34px; height: 34px; font-size: 15px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 10px; font-weight: 600; }
+  h1 { font-size: 26px; font-weight: 700; margin: 0 0 24px; color: var(--text); }
+  form {
+    background: var(--panel); border: 1px solid var(--panel-border); box-shadow: var(--shadow);
+    border-radius: 16px; padding: 24px;
+  }
+  form p { margin: 0 0 16px; }
+  form label { display: block; font-size: 12px; font-family: 'IBM Plex Mono', monospace;
+    color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+  form input, form select {
+    width: 100%; padding: 10px 12px; background: var(--bg); border: 1px solid var(--panel-border);
+    border-radius: 8px; color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px;
+  }
+  .errorlist { color: var(--danger); font-size: 12px; list-style: none; padding: 0; margin: 4px 0; }
+  button[type="submit"] {
+    margin-top: 8px; padding: 11px 20px; background: var(--accent); color: #0c0e13; border: none;
+    border-radius: 10px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px;
+    cursor: pointer; letter-spacing: 0.03em;
+  }
+  a.back { display: inline-block; margin-top: 18px; color: var(--muted); text-decoration: none; font-size: 13px; }
+  a.back:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-row">
+    <div>
+      <div class="eyebrow">UMLM — Gestion</div>
+      <h1>{{ title }}</h1>
+    </div>
+    <button id="theme-toggle" onclick="toggleTheme()">🌙</button>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Enregistrer</button>
+  </form>
+  <a class="back" href="{% url list_url %}">← Retour à la liste</a>
+</div>
+
+<script>
+  const toggleBtn = document.getElementById('theme-toggle');
+  function applyIcon() {
+    const isLight = document.documentElement.classList.contains('light');
+    toggleBtn.textContent = isLight ? '☀️' : '🌙';
+  }
+  if (localStorage.getItem('umlm-theme') === 'light') { document.documentElement.classList.add('light'); }
+  applyIcon();
+  function toggleTheme() {
+    document.documentElement.classList.toggle('light');
+    localStorage.setItem('umlm-theme', document.documentElement.classList.contains('light') ? 'light' : 'dark');
+    applyIcon();
+  }
+</script>
+</body>
+</html>

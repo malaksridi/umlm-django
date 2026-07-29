@@ -14,14 +14,16 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+from dotenv import load_dotenv
+import os
 
+load_dotenv(BASE_DIR / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-(8#v79npjovr#@rk&itm7o2+0*1359*_@e1y4u9x4fs$9z@y2&'
-
+SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -122,12 +124,11 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'          # ou le serveur SMTP de l'entreprise
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'EMAIL_REDACTED '      # l'adresse qui ENVOIE les alertes
-EMAIL_HOST_PASSWORD = 'xxxx xxxx xxxx xxxx'      # un "mot de passe d'application", PAS ton vrai mot de passe
-DEFAULT_FROM_EMAIL = 'UMLM Alertes <EMAIL_REDACTED >'
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = 'UMLM Alertes <malaksridi145@gmail.com>'
 
 # Liste des emails du staff qui doivent recevoir les alertes critiques
 STAFF_ALERT_EMAILS = [
-    'chef-de-projet@nachdit.com',
-    'direction-technique@nachdit.com',
+    'malaksridi145@gmail.com',
 ]

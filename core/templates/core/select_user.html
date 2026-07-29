@@ -1,0 +1,18 @@
+<!-- Destination: core/templates/core/select_user.html  (new file) -->
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><title>UMLM — Qui êtes-vous ?</title></head>
+<body style="font-family:sans-serif; max-width:400px; margin:60px auto;">
+    <h2>Qui êtes-vous ?</h2>
+    <form method="post">
+        {% csrf_token %}
+        <select name="user_id" required style="width:100%; padding:8px; margin-bottom:12px;">
+            <option value="" disabled selected>-- Choisir un utilisateur --</option>
+            {% for user in users %}
+                <option value="{{ user.id }}">{{ user.name }} ({{ user.role.name }})</option>
+            {% endfor %}
+        </select>
+        <button type="submit" style="width:100%; padding:8px;">Entrer</button>
+    </form>
+</body>
+</html>
