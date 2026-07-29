@@ -1,3 +1,4 @@
+<!-- Destination: core/templates/core/dashboard.html  (replace the whole file) -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -309,8 +310,8 @@
   </table>
 
   <div class="section-title">Évolution des modules en retard</div>
-  <div style="background: var(--panel); backdrop-filter: blur(10px); border: 1px solid var(--panel-border); box-shadow: var(--shadow); border-radius: 16px; padding: 20px;">
-    <canvas id="historique-chart" height="80"></canvas>
+  <div style="background: var(--panel); backdrop-filter: blur(10px); border: 1px solid var(--panel-border); box-shadow: var(--shadow); border-radius: 16px; padding: 20px; height: 300px;">
+    <canvas id="historique-chart"></canvas>
   </div>
 
   <div class="section-title">Alertes récentes</div>
@@ -362,6 +363,7 @@
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
           x: { grid: { color: gridColor }, ticks: { color: textColor, font: { family: 'IBM Plex Mono' } } },
@@ -371,6 +373,9 @@
     });
   }
   drawChart();
+  window.addEventListener('resize', () => {
+    if (window.historiqueChart) window.historiqueChart.resize();
+  });
 </script>
 
 <script>
