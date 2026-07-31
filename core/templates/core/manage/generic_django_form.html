@@ -56,14 +56,17 @@
   }
 
   /* Checkboxes need their own layout — the generic input{width:100%} rule
-     above stretches their click box, which is what was centering them. */
-  .form-card p:has(input[type="checkbox"]) {
+     above stretches their click box, which is what was centering them.
+     Scoped to DIRECT-CHILD checkboxes only (single droits checkboxes) —
+     multi-select checkbox lists (modules/roles) render as <ul><li> and
+     are styled separately below, not by this rule. */
+  .form-card p:has(> input[type="checkbox"]) {
     display: flex;
     align-items: center;
     gap: 10px;
     margin: 0 0 14px;
   }
-  .form-card p:has(input[type="checkbox"]) label {
+  .form-card p:has(> input[type="checkbox"]) label {
     order: 2;
     margin-bottom: 0;
     text-transform: none;
@@ -72,12 +75,40 @@
     letter-spacing: normal;
   }
   .form-card input[type="checkbox"] {
-    order: 1;
     width: 18px;
     height: 18px;
     flex-shrink: 0;
     accent-color: var(--accent);
     cursor: pointer;
+  }
+  .form-card p:has(> input[type="checkbox"]) input[type="checkbox"] {
+    order: 1;
+  }
+
+  /* Multi-select checkbox lists (modules attendus / rôles assignés) */
+  .form-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 6px 0 18px;
+    max-height: 220px;
+    overflow-y: auto;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    background: var(--bg);
+  }
+  .form-card ul li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+  }
+  .form-card ul li label {
+    margin: 0;
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: 13.5px;
+    color: var(--text);
+    font-weight: 400;
   }
 
   /* Collapsible "Droits" panel */

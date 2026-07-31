@@ -1,6 +1,6 @@
 # Destination: core/views_manage.py  (replace the whole file)
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Project, Module, Role, User
+from .models import Project, Module, Role, User, ProjectModule
 from .auth import role_required
 from .forms_manage import ProjectForm, ModuleForm, RoleForm, UserForm
 
@@ -30,6 +30,24 @@ def _form_view(request, form_class, instance, title, list_url_name):
     })
 
 
+def _sync_project_modules(project, selected_modules):
+    """
+    Crée les associations ProjectModule manquantes pour les modules
+    cochés dans le formulaire (cahier des charges 4.1 : "Associer les
+    modules attendus"). N'efface volontairement pas les associations
+    existantes si un module est décoché — pour supprimer une association,
+    utilisez la page de gestion des modules du projet. Ça évite de perdre
+    accidentellement l'historique des scans (MiseAJour) d'un module en le
+    décochant par erreur.
+    """
+    existing_module_ids = set(project.project_modules.values_list("module_id", flat=True))
+    for module in selected_modules:
+        if module.id not in existing_module_ids:
+            ProjectModule.objects.create(
+                project=project, module=module, status=ProjectModule.Status.NON_INTEGRE
+            )
+
+
 # ---------- PROJETS ----------
 
 @role_required("admin")
@@ -39,11 +57,26 @@ def project_list(request):
 
 @role_required("admin")
 def project_add(request):
-    return _form_view(request, ProjectForm, None, "Ajouter un projet", "project_list")
+    form = ProjectForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        project = form.save()
+        _sync_project_modules(project, form.cleaned_data["modules"])
+        return redirect("project_list")
+    return render(request, "core/manage/generic_django_form.html", {
+        "title": "Ajouter un projet", "form": form, "list_url": "project_list",
+    })
 
 @role_required("admin")
 def project_edit(request, pk):
-    return _form_view(request, ProjectForm, get_object_or_404(Project, pk=pk), "Modifier le projet", "project_list")
+    project = get_object_or_404(Project, pk=pk)
+    form = ProjectForm(request.POST or None, instance=project)
+    if request.method == "POST" and form.is_valid():
+        project = form.save()
+        _sync_project_modules(project, form.cleaned_data["modules"])
+        return redirect("project_list")
+    return render(request, "core/manage/generic_django_form.html", {
+        "title": "Modifier le projet", "form": form, "list_url": "project_list",
+    })
 
 @role_required("admin")
 def project_delete(request, pk):

@@ -4,9 +4,34 @@ from .models import Project, Module, Role, User
 
 
 class ProjectForm(forms.ModelForm):
+    # Non-model field: which modules are "expected" on this project
+    # (cahier des charges 4.1 : "Associer les modules attendus")
+    modules = forms.ModelMultipleChoiceField(
+        queryset=Module.objects.all(),
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        label="Modules attendus",
+    )
+
     class Meta:
         model = Project
-        fields = ["name", "local_path", "reference_branch"]
+        # "roles" is a real ManyToMany field on Project — determines which
+        # Développeurs see this project (section 3 : "projets assignés")
+        fields = ["name", "local_path", "reference_branch", "roles"]
+        widgets = {
+            "roles": forms.CheckboxSelectMultiple,
+        }
+        labels = {
+            "roles": "Rôles assignés",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            # Pre-check the modules already associated with this project
+            self.fields["modules"].initial = Module.objects.filter(
+                project_modules__project=self.instance
+            )
 
 
 class ModuleForm(forms.ModelForm):

@@ -131,3 +131,7 @@ DEFAULT_FROM_EMAIL = 'UMLM Alertes <malaksridi145@gmail.com>'
 STAFF_ALERT_EMAILS = [
     'malaksridi145@gmail.com',
 ]
+
+# Seuil configurable (en jours) pour l'alerte "retard prolongé"
+# (cahier des charges 4.5 : "le retard dépasse un seuil configurable")
+ALERT_DELAY_THRESHOLD_DAYS = int(os.environ.get("ALERT_DELAY_THRESHOLD_DAYS", 7))

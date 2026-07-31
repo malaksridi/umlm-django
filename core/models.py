@@ -33,6 +33,8 @@ class Project(models.Model):
     name = models.CharField(max_length=255, unique=True)
     local_path = models.CharField(max_length=500)
     reference_branch = models.CharField(max_length=100, default="main")
+    # Rôles assignés à ce projet — détermine quels Développeurs le voient
+    # (cahier des charges section 3 : "Consultation des projets assignés")
     roles = models.ManyToManyField(Role, related_name="projects", blank=True)
 
     def __str__(self):
@@ -84,14 +86,36 @@ class ProjectModule(models.Model):
         """
         Recalcule le status à partir de local_commit / github_commit.
         Appelé après un scan GitHub (voir github_service.py).
+
+        Utilise l'API "compare" de GitHub (github_service.compare_commits)
+        pour distinguer correctement BEHIND / AHEAD / DIVERGED plutôt que
+        de tout classer en BEHIND. Si la comparaison échoue (ex: le
+        commit local n'a jamais été poussé sur GitHub), on retombe sur
+        BEHIND par défaut — le cas le plus courant en pratique.
         """
-        if not self.local_commit:
+        # Un fork personnalisé ignore volontairement les mises à jour
+        # (cahier des charges section 4.3 : "Mises à jour ignorées volontairement")
+        if self.module.is_custom_fork:
+            self.status = self.Status.FORK_PERSONNALISE
+        elif not self.local_commit:
             self.status = self.Status.NON_INTEGRE
         elif self.local_commit == self.github_commit:
             self.status = self.Status.UP_TO_DATE
         else:
-            # Logique simplifiée V1 : à affiner avec un vrai diff de commits
-            self.status = self.Status.BEHIND
+            from core.github_service import compare_commits
+            comparison = compare_commits(
+                self.module.github_url, base=self.local_commit, head=self.github_commit
+            )
+            if comparison == "ahead":
+                self.status = self.Status.BEHIND
+            elif comparison == "behind":
+                self.status = self.Status.AHEAD
+            elif comparison == "diverged":
+                self.status = self.Status.DIVERGED
+            elif comparison == "identical":
+                self.status = self.Status.UP_TO_DATE
+            else:
+                self.status = self.Status.BEHIND
         self.save()
 
         # Historise ce résultat (section 4.6)
@@ -116,7 +140,7 @@ class Alert(models.Model):
         TEAMS_SLACK = "teams_slack"
 
     mise_a_jour = models.ForeignKey(MiseAJour, on_delete=models.CASCADE, related_name="alerts")
-    type = models.CharField(max_length=100)  # ex: module_critique_retard, module_absent, diverged
+    type = models.CharField(max_length=100)  # ex: module_critique_retard, module_absent, diverged, retard_seuil_depasse
     channel = models.CharField(max_length=25, choices=Channel.choices, default=Channel.NOTIFICATION_INTERNE)
     sent_at = models.DateTimeField(auto_now_add=True)
 
