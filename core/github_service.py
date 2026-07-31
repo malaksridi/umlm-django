@@ -51,23 +51,6 @@ def get_latest_commit(github_url: str, branch: str = "main") -> str | None:
     return response.json()["sha"]
 
 
-def get_local_commit(local_path: str, branch: str = "main") -> str | None:
-    """
-    Récupère le commit HEAD local d'un projet cloné sur le serveur.
-    Suppose que 'local_path' est un dépôt git valide.
-    """
-    import subprocess
-
-    try:
-        result = subprocess.run(
-            ["git", "-C", local_path, "rev-parse", branch],
-            capture_output=True, text=True, timeout=10, check=True,
-        )
-        return result.stdout.strip()
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        return None
-
-
 def compare_commits(github_url: str, base: str, head: str) -> str | None:
     """
     Utilise l'endpoint "compare" de l'API GitHub pour déterminer la vraie

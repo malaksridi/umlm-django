@@ -15,7 +15,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from core.github_service import get_latest_commit, get_local_commit
+from core.github_service import get_latest_commit
 from core.models import ProjectModule, Alert, User
 
 
@@ -38,7 +38,7 @@ class Command(BaseCommand):
 
         for pm in project_modules:
             github_commit = get_latest_commit(pm.module.github_url, pm.module.reference_branch)
-            local_commit = get_local_commit(pm.project.local_path, pm.project.reference_branch)
+            local_commit = get_latest_commit(pm.project.github_url, pm.project.reference_branch)
 
             pm.github_commit = github_commit
             pm.local_commit = local_commit

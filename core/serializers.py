@@ -22,7 +22,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["id", "name", "local_path", "reference_branch", "project_modules"]
+        fields = ["id", "name", "github_url", "reference_branch", "project_modules"]
 
 
 class MiseAJourSerializer(serializers.ModelSerializer):

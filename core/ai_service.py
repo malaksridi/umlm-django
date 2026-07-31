@@ -38,7 +38,7 @@ def _build_context() -> str:
     # ---------- Projets ----------
     projects = list(Project.objects.all()[:MAX_ITEMS])
     projects_lines = [
-        f"  - {p.name} (chemin local : {p.local_path}, branche de référence : {p.reference_branch})"
+        f"  - {p.name} (dépôt GitHub : {p.github_url}, branche de référence : {p.reference_branch})"
         for p in projects
     ]
     projects_block = "\n".join(projects_lines) if projects_lines else "  (aucun projet défini)"

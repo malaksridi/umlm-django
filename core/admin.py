@@ -29,7 +29,7 @@ class ProjectModuleInline(admin.TabularInline):
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ["name", "local_path", "reference_branch", "nb_modules"]
+    list_display = ["name", "github_url", "reference_branch", "nb_modules"]
     search_fields = ["name"]
     inlines = [ProjectModuleInline]
 

@@ -17,7 +17,7 @@ class ProjectForm(forms.ModelForm):
         model = Project
         # "roles" is a real ManyToMany field on Project — determines which
         # Développeurs see this project (section 3 : "projets assignés")
-        fields = ["name", "local_path", "reference_branch", "roles"]
+        fields = ["name", "github_url", "reference_branch", "roles"]
         widgets = {
             "roles": forms.CheckboxSelectMultiple,
         }

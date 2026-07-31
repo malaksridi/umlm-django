@@ -53,7 +53,7 @@ def _sync_project_modules(project, selected_modules):
 @role_required("admin")
 def project_list(request):
     return _list_view(request, Project, "Projets", "project_add", "project_edit", "project_delete",
-                       ["name", "local_path", "reference_branch"])
+                       ["name", "github_url", "reference_branch"])
 
 @role_required("admin")
 def project_add(request):

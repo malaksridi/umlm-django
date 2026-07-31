@@ -32,7 +32,7 @@ class Command(BaseCommand):
             obj, created = Project.objects.update_or_create(
                 name=p["name"],
                 defaults={
-                    "local_path": p["local_path"],
+                    "github_url": p["github_url"],
                     "reference_branch": p.get("reference_branch", "main"),
                 },
             )

@@ -1,12 +1,12 @@
 [
     {
         "name": "UPS",
-        "local_path": "/var/www/ups",
+        "github_url": "https://github.com/nachd-it/ups",
         "reference_branch": "main"
     },
     {
         "name": "UMS",
-        "local_path": "/var/www/ums",
+        "github_url": "https://github.com/nachd-it/ums",
         "reference_branch": "main"
     }
 ]

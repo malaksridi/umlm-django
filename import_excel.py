@@ -41,7 +41,7 @@ COL_MODULE_CRITICALITY = "Criticité"   # doit valoir: faible / moyen / critique
 # --- Feuille "Projets" ---
 SHEET_PROJECTS = "Projets"
 COL_PROJECT_NAME = "Nom"
-COL_PROJECT_LOCAL_PATH = "Chemin local"
+COL_PROJECT_GITHUB_URL = "URL GitHub"
 COL_PROJECT_BRANCH = "Branche"
 
 # --- Feuille "Utilisateurs" ---
@@ -118,7 +118,7 @@ def import_projects(wb):
         Project.objects.get_or_create(
             name=str(name).strip(),
             defaults={
-                "local_path": row.get(COL_PROJECT_LOCAL_PATH, "") or "",
+                "github_url": row.get(COL_PROJECT_GITHUB_URL, "") or "",
                 "reference_branch": row.get(COL_PROJECT_BRANCH, "main") or "main",
             },
         )

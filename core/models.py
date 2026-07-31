@@ -31,7 +31,7 @@ class User(models.Model):
 
 class Project(models.Model):
     name = models.CharField(max_length=255, unique=True)
-    local_path = models.CharField(max_length=500)
+    github_url = models.URLField(max_length=500)
     reference_branch = models.CharField(max_length=100, default="main")
     # Rôles assignés à ce projet — détermine quels Développeurs le voient
     # (cahier des charges section 3 : "Consultation des projets assignés")
