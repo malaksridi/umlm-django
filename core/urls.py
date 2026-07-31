@@ -1,11 +1,14 @@
-# Destination: core/urls.py  (replace the whole file)
-from . import views_manage
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-
+from . import views_manage
 from core.views import (
-    ProjectViewSet, ModuleViewSet, ProjectModuleViewSet,
-    MiseAJourViewSet, AlertViewSet, DashboardView,
+    ProjectViewSet, 
+    ModuleViewSet, 
+    ProjectModuleViewSet,
+    MiseAJourViewSet, 
+    AlertViewSet, 
+    DashboardView,
+    chat_ai_view,
 )
 
 router = DefaultRouter()
@@ -18,6 +21,7 @@ router.register(r"dashboard-api", DashboardView, basename="dashboard-api")
 
 urlpatterns = [
     path("", include(router.urls)),
+    path("chat/", chat_ai_view, name="chat_ai"),
 
     path("manage/projects/", views_manage.project_list, name="project_list"),
     path("manage/projects/add/", views_manage.project_add, name="project_add"),

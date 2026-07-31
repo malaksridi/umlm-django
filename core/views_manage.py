@@ -7,7 +7,13 @@ from .forms_manage import ProjectForm, ModuleForm, RoleForm, UserForm
 
 def _list_view(request, model, title, add_url, edit_url, delete_url, display_fields):
     items = model.objects.all()
-    rows = [{"pk": obj.pk, "values": [getattr(obj, f, "") for f in display_fields]} for obj in items]
+    rows = [
+        {
+            "pk": obj.pk,
+            "cells": [{"field": f, "value": getattr(obj, f, "")} for f in display_fields],
+        }
+        for obj in items
+    ]
     return render(request, "core/manage/generic_list.html", {
         "title": title, "fields": display_fields, "rows": rows,
         "add_url": add_url, "edit_url": edit_url, "delete_url": delete_url,
@@ -70,7 +76,8 @@ def module_delete(request, pk):
 
 @role_required("admin")
 def role_list(request):
-    return _list_view(request, Role, "Rôles", "role_add", "role_edit", "role_delete", ["name"])
+    return _list_view(request, Role, "Rôles", "role_add", "role_edit", "role_delete",
+                       ["name", "nombre_utilisateurs"])
 
 @role_required("admin")
 def role_add(request):

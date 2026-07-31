@@ -1,92 +1,201 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<title>{{ title }} — UMLM</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
-  :root {
-    --bg: #0c0e13; --bg-image: none; --panel: #14171f; --panel-border: rgba(255,255,255,0.07);
-    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.24);
-    --text: #eceef2; --muted: #8b91a1; --accent: #7c9cff; --accent-bg: rgba(124,156,255,0.12);
-    --danger: #f16565;
+{% extends "base.html" %}
+
+{% block title %}{{ title }} — UMLM{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block nav_projects %}{% if list_url == "project_list" or "projet" in title|lower %}class="active"{% endif %}{% endblock %}
+{% block nav_modules %}{% if list_url == "module_list" or "module" in title|lower %}class="active"{% endif %}{% endblock %}
+{% block nav_roles %}{% if list_url == "role_list" or "rôle" in title|lower or "role" in title|lower %}class="active"{% endif %}{% endblock %}
+{% block nav_users %}{% if list_url == "user_list" or "utilisateur" in title|lower %}class="active"{% endif %}{% endblock %}
+
+{% block nav_projects_href %}{% url 'project_add' %}{% endblock %}
+{% block nav_modules_href %}{% url 'module_add' %}{% endblock %}
+{% block nav_roles_href %}{% url 'role_add' %}{% endblock %}
+{% block nav_users_href %}{% url 'user_add' %}{% endblock %}
+
+{% block extra_style %}
+  .form-page {
+    display: flex;
+    justify-content: center;
   }
-  html.light {
-    --bg: #eef0f7;
-    --bg-image: radial-gradient(1200px 600px at 15% -10%, #dde3fb 0%, transparent 55%),
-                radial-gradient(1000px 700px at 100% 100%, #e4e8fa 0%, transparent 55%);
-    --panel: rgba(255,255,255,0.85); --panel-border: rgba(30,20,60,0.07);
-    --shadow: 0 1px 2px rgba(30,20,60,0.04), 0 6px 20px rgba(60,70,140,0.07);
-    --text: #1c1e2b; --muted: #666b80; --accent: #4438c9; --accent-bg: #e7e4fa; --danger: #c22645;
+  .form-card {
+    width: 100%;
+    max-width: 520px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--shadow);
+    border-radius: 16px;
+    padding: 28px;
+    margin: 0 0 20px;
   }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; background: var(--bg-image), var(--bg); background-attachment: fixed;
-    color: var(--text); font-family: 'Space Grotesk', sans-serif; padding: 48px 28px 90px;
-    transition: background 0.25s, color 0.25s; -webkit-font-smoothing: antialiased;
+  .form-card p { margin: 0 0 16px; }
+  .form-card label {
+    display: block;
+    font-size: 11.5px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
   }
-  .wrap { max-width: 480px; margin: 0 auto; }
-  .top-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
-  #theme-toggle {
-    background: var(--panel); border: 1px solid var(--panel-border); box-shadow: var(--shadow);
-    color: var(--muted); border-radius: 8px; width: 34px; height: 34px; font-size: 15px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  .form-card input, .form-card select, .form-card textarea {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
   }
-  .eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.14em;
-    text-transform: uppercase; color: var(--accent); margin-bottom: 10px; font-weight: 600; }
-  h1 { font-size: 26px; font-weight: 700; margin: 0 0 24px; color: var(--text); }
-  form {
-    background: var(--panel); border: 1px solid var(--panel-border); box-shadow: var(--shadow);
-    border-radius: 16px; padding: 24px;
+  .form-card input:focus, .form-card select:focus, .form-card textarea:focus {
+    border-color: var(--accent);
   }
-  form p { margin: 0 0 16px; }
-  form label { display: block; font-size: 12px; font-family: 'IBM Plex Mono', monospace;
-    color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
-  form input, form select {
-    width: 100%; padding: 10px 12px; background: var(--bg); border: 1px solid var(--panel-border);
-    border-radius: 8px; color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px;
+
+  /* Checkboxes need their own layout — the generic input{width:100%} rule
+     above stretches their click box, which is what was centering them. */
+  .form-card p:has(input[type="checkbox"]) {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 14px;
   }
-  .errorlist { color: var(--danger); font-size: 12px; list-style: none; padding: 0; margin: 4px 0; }
-  button[type="submit"] {
-    margin-top: 8px; padding: 11px 20px; background: var(--accent); color: #0c0e13; border: none;
-    border-radius: 10px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px;
-    cursor: pointer; letter-spacing: 0.03em;
+  .form-card p:has(input[type="checkbox"]) label {
+    order: 2;
+    margin-bottom: 0;
+    text-transform: none;
+    font-size: 13.5px;
+    color: var(--text);
+    letter-spacing: normal;
   }
-  a.back { display: inline-block; margin-top: 18px; color: var(--muted); text-decoration: none; font-size: 13px; }
-  a.back:hover { color: var(--accent); }
-</style>
-</head>
-<body>
-<div class="wrap">
-  <div class="top-row">
-    <div>
-      <div class="eyebrow">UMLM — Gestion</div>
-      <h1>{{ title }}</h1>
+  .form-card input[type="checkbox"] {
+    order: 1;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  /* Collapsible "Droits" panel */
+  .droits-group {
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    background: var(--bg);
+    margin: 4px 0 20px;
+    overflow: hidden;
+  }
+  .droits-group summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    user-select: none;
+  }
+  .droits-group summary::-webkit-details-marker { display: none; }
+  .droits-group summary::marker { display: none; content: ""; }
+  .droits-group summary .chevron {
+    transition: transform 0.2s ease;
+    color: var(--accent);
+    font-size: 20px;
+  }
+  .droits-group[open] summary .chevron { transform: rotate(180deg); }
+  .droits-group[open] summary { border-bottom: 1px solid var(--panel-border); }
+  .droits-list { padding: 14px; }
+  .droits-list p { margin: 0 0 12px !important; }
+  .droits-list p:last-child { margin-bottom: 0 !important; }
+  .errorlist {
+    color: var(--danger);
+    font-size: 12px;
+    list-style: none;
+    padding: 0;
+    margin: 4px 0 0;
+  }
+  .btn-submit {
+    margin-top: 12px;
+    padding: 11px 22px;
+    background: var(--accent);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: opacity 0.15s, transform 0.15s;
+  }
+  .btn-submit:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+  .back-wrap {
+    display: flex;
+    justify-content: center;
+  }
+  a.back {
+    display: inline-flex;
+    align-items: center;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    transition: color 0.15s;
+  }
+  a.back:hover {
+    color: var(--accent);
+  }
+{% endblock %}
+
+{% block content %}
+
+  <div class="form-page">
+    <div class="form-card">
+      <form method="post">
+        {% csrf_token %}
+
+        {% for field in form %}
+          {% if field.name|slice:":6" != "droit_" %}
+            <p>
+              {{ field.label_tag }}
+              {{ field }}
+              {{ field.errors }}
+            </p>
+          {% endif %}
+        {% endfor %}
+
+        {% if form.droit_gestion_complete %}
+          <details class="droits-group">
+            <summary>Droits <span class="chevron">▾</span></summary>
+            <div class="droits-list">
+              <p><label for="{{ form.droit_gestion_complete.id_for_label }}">{{ form.droit_gestion_complete.label }}</label>{{ form.droit_gestion_complete }}</p>
+              <p><label for="{{ form.droit_consultation.id_for_label }}">{{ form.droit_consultation.label }}</label>{{ form.droit_consultation }}</p>
+              <p><label for="{{ form.droit_alertes.id_for_label }}">{{ form.droit_alertes.label }}</label>{{ form.droit_alertes }}</p>
+              <p><label for="{{ form.droit_consultation_projets_assignes.id_for_label }}">{{ form.droit_consultation_projets_assignes.label }}</label>{{ form.droit_consultation_projets_assignes }}</p>
+              <p><label for="{{ form.droit_vue_globale_statistiques.id_for_label }}">{{ form.droit_vue_globale_statistiques.label }}</label>{{ form.droit_vue_globale_statistiques }}</p>
+            </div>
+          </details>
+        {% endif %}
+
+        <button type="submit" class="btn-submit">Enregistrer</button>
+      </form>
     </div>
-    <button id="theme-toggle" onclick="toggleTheme()">🌙</button>
   </div>
 
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Enregistrer</button>
-  </form>
-  <a class="back" href="{% url list_url %}">← Retour à la liste</a>
-</div>
+  <div class="back-wrap">
+    <a class="back" href="{% url list_url %}">← Retour à la liste</a>
+  </div>
 
-<script>
-  const toggleBtn = document.getElementById('theme-toggle');
-  function applyIcon() {
-    const isLight = document.documentElement.classList.contains('light');
-    toggleBtn.textContent = isLight ? '☀️' : '🌙';
-  }
-  if (localStorage.getItem('umlm-theme') === 'light') { document.documentElement.classList.add('light'); }
-  applyIcon();
-  function toggleTheme() {
-    document.documentElement.classList.toggle('light');
-    localStorage.setItem('umlm-theme', document.documentElement.classList.contains('light') ? 'light' : 'dark');
-    applyIcon();
-  }
-</script>
-</body>
-</html>
+{% endblock %}

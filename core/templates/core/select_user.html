@@ -1,18 +1,210 @@
-<!-- Destination: core/templates/core/select_user.html  (new file) -->
+<!-- Destination: core/templates/core/select_user.html  (replace the whole file) -->
 <!DOCTYPE html>
-<html lang="fr">
-<head><meta charset="UTF-8"><title>UMLM — Qui êtes-vous ?</title></head>
-<body style="font-family:sans-serif; max-width:400px; margin:60px auto;">
+<html lang="fr" class="light">
+<head>
+<meta charset="UTF-8">
+<meta name="color-scheme" content="light">
+<script>
+  (function() {
+    const savedTheme = localStorage.getItem('umlm_theme');
+    const isDark = savedTheme === 'dark';
+    const html = document.documentElement;
+
+    html.classList.toggle('light', !isDark);
+    html.style.colorScheme = isDark ? 'dark' : 'light';
+
+    if (isDark) {
+      const meta = document.querySelector('meta[name="color-scheme"]');
+      if (meta) meta.setAttribute('content', 'dark');
+    }
+  })();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UMLM — Qui êtes-vous ?</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #0c0e13;
+    --bg-image: none;
+    --panel: #14171f;
+    --panel-border: rgba(255,255,255,0.07);
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.24);
+    --text: #eceef2;
+    --muted: #8b91a1;
+    --accent: #7c9cff; --accent-bg: rgba(124,156,255,0.12);
+    --font-heading: 'Space Grotesk', sans-serif;
+  }
+
+  html.light {
+    --bg: #f0f2fd;
+    --bg-image: radial-gradient(at 0% 0%, rgba(224, 231, 255, 0.8) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(237, 233, 254, 0.7) 0px, transparent 50%);
+    --panel: #ffffff;
+    --panel-border: rgba(224, 231, 255, 0.8);
+    --shadow: 0 10px 30px -10px rgba(79, 70, 229, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+    --text: #1e1b4b;
+    --muted: #64748b;
+    --accent: #4f46e5; --accent-bg: #e0e7ff;
+  }
+
+  * { box-sizing: border-box; }
+
+  html {
+    min-height: 100%;
+    background: var(--bg-image), var(--bg);
+    background-attachment: fixed;
+    transition: background 0.25s;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: transparent;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  #theme-toggle {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    background: var(--panel);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--shadow);
+    color: var(--muted);
+    border-radius: 10px;
+    width: 38px;
+    height: 38px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s, color 0.15s;
+  }
+  #theme-toggle:hover { color: var(--accent); transform: translateY(-1px); }
+
+  .card {
+    width: 100%;
+    max-width: 400px;
+    background: var(--panel);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--shadow);
+    border-radius: 16px;
+    padding: 32px;
+  }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 22px;
+    letter-spacing: -0.01em;
+    font-family: var(--font-heading);
+    color: var(--text);
+  }
+
+  label {
+    display: block;
+    font-size: 11.5px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+
+  select {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    outline: none;
+    margin-bottom: 18px;
+    transition: border-color 0.15s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238b91a1' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+  }
+  select:focus { border-color: var(--accent); }
+
+  button {
+    width: 100%;
+    padding: 11px 22px;
+    background: var(--accent);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: opacity 0.15s, transform 0.15s;
+  }
+  button:hover { opacity: 0.9; transform: translateY(-1px); }
+</style>
+</head>
+<body>
+
+  <button id="theme-toggle" onclick="toggleTheme()" aria-label="Basculer le thème">☀️</button>
+
+  <div class="card">
+    <div class="eyebrow">UMLM — GESTION</div>
     <h2>Qui êtes-vous ?</h2>
     <form method="post">
-        {% csrf_token %}
-        <select name="user_id" required style="width:100%; padding:8px; margin-bottom:12px;">
-            <option value="" disabled selected>-- Choisir un utilisateur --</option>
-            {% for user in users %}
-                <option value="{{ user.id }}">{{ user.name }} ({{ user.role.name }})</option>
-            {% endfor %}
-        </select>
-        <button type="submit" style="width:100%; padding:8px;">Entrer</button>
+      {% csrf_token %}
+      <label>Utilisateur</label>
+      <select name="user_id" required>
+        <option value="" disabled selected>-- Choisir un utilisateur --</option>
+        {% for user in users %}
+          <option value="{{ user.id }}">{{ user.name }} ({{ user.role.name }})</option>
+        {% endfor %}
+      </select>
+      <button type="submit">Entrer</button>
     </form>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const isLight = document.documentElement.classList.contains('light');
+      document.getElementById('theme-toggle').textContent = isLight ? '☀️' : '🌙';
+    });
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isLight = html.classList.toggle('light');
+      localStorage.setItem('umlm_theme', isLight ? 'light' : 'dark');
+      html.style.colorScheme = isLight ? 'light' : 'dark';
+      document.getElementById('theme-toggle').textContent = isLight ? '☀️' : '🌙';
+    }
+  </script>
+
 </body>
 </html>

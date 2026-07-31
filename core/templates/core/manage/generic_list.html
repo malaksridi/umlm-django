@@ -1,55 +1,14 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<title>{{ title }} — UMLM</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
-  :root {
-    --bg: #0c0e13; --bg-image: none; --panel: #14171f; --panel-border: rgba(255,255,255,0.07);
-    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.24);
-    --text: #eceef2; --muted: #8b91a1;
-    --ok: #4ade80; --ok-bg: rgba(74,222,128,0.12);
-    --warn: #f5a94e; --warn-bg: rgba(245,169,78,0.12);
-    --danger: #f16565; --danger-bg: rgba(241,101,101,0.12);
-    --accent: #7c9cff; --accent-bg: rgba(124,156,255,0.12);
-  }
-  html.light {
-    --bg: #eef0f7;
-    --bg-image: radial-gradient(1200px 600px at 15% -10%, #dde3fb 0%, transparent 55%),
-                radial-gradient(1000px 700px at 100% 100%, #e4e8fa 0%, transparent 55%);
-    --panel: rgba(255,255,255,0.85); --panel-border: rgba(30,20,60,0.07);
-    --shadow: 0 1px 2px rgba(30,20,60,0.04), 0 6px 20px rgba(60,70,140,0.07);
-    --text: #1c1e2b; --muted: #666b80;
-    --ok: #0d8a4e; --ok-bg: #e0f7ea;
-    --warn: #b5670a; --warn-bg: #fbedd7;
-    --danger: #c22645; --danger-bg: #fbe4e9;
-    --accent: #4438c9; --accent-bg: #e7e4fa;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; background: var(--bg-image), var(--bg); background-attachment: fixed;
-    color: var(--text); font-family: 'Space Grotesk', sans-serif; padding: 48px 28px 90px;
-    transition: background 0.25s, color 0.25s; -webkit-font-smoothing: antialiased;
-  }
-  .wrap { max-width: 980px; margin: 0 auto; }
-  .top-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
-  #theme-toggle {
-    background: var(--panel); border: 1px solid var(--panel-border); box-shadow: var(--shadow);
-    color: var(--muted); border-radius: 8px; width: 34px; height: 34px; font-size: 15px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-  }
-  .eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.14em;
-    text-transform: uppercase; color: var(--accent); margin-bottom: 10px; font-weight: 600; }
-  h1 { font-size: 30px; font-weight: 700; margin: 0 0 8px; letter-spacing: -0.01em; color: var(--text); }
-  .nav-menu { display: flex; gap: 8px; flex-wrap: wrap; margin: 24px 0 36px; }
-  .nav-menu a {
-    text-decoration: none; font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600;
-    letter-spacing: 0.03em; color: var(--muted); background: var(--panel); border: 1px solid var(--panel-border);
-    box-shadow: var(--shadow); padding: 9px 16px; border-radius: 10px; transition: color 0.15s, transform 0.15s;
-  }
-  .nav-menu a:hover { color: var(--accent); transform: translateY(-1px); }
-  .nav-menu a.active { color: var(--accent); background: var(--accent-bg); }
+{% extends "base.html" %}
+
+{% block title %}{{ title }} — UMLM{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block nav_projects %}{% if title == 'Projets' %}class="active"{% endif %}{% endblock %}
+{% block nav_modules %}{% if title == 'Modules' %}class="active"{% endif %}{% endblock %}
+{% block nav_roles %}{% if title == 'Rôles' %}class="active"{% endif %}{% endblock %}
+{% block nav_users %}{% if title == 'Utilisateurs' %}class="active"{% endif %}{% endblock %}
+
+{% block extra_style %}
   .btn-add {
     display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
     font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; font-weight: 700;
@@ -57,72 +16,46 @@
     padding: 10px 18px; border-radius: 10px; margin-bottom: 22px; transition: transform 0.15s;
   }
   .btn-add:hover { transform: translateY(-1px); }
-  table {
-    width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--panel-border);
-    box-shadow: var(--shadow); border-radius: 16px; overflow: hidden;
-  }
-  th, td { text-align: left; padding: 14px 18px; font-size: 13.5px; }
-  th { color: var(--muted); font-weight: 700; font-size: 11px; text-transform: uppercase;
-    letter-spacing: 0.06em; border-bottom: 1px solid var(--panel-border); background: var(--accent-bg); }
-  tr:not(:last-child) td { border-bottom: 1px solid var(--panel-border); }
-  tbody tr:hover { background: var(--accent-bg); }
   .action-link { color: var(--accent); text-decoration: none; font-size: 12.5px; font-weight: 600; margin-right: 14px; }
   .delete-link { color: var(--danger); text-decoration: none; font-size: 12.5px; font-weight: 600; }
-  .empty { color: var(--muted); font-size: 13px; padding: 18px; font-style: italic; }
-</style>
-</head>
-<body>
-<div class="wrap">
-  <div class="top-row">
-    <div>
-      <div class="eyebrow">UMLM — Gestion</div>
-      <h1>{{ title }}</h1>
-    </div>
-    <button id="theme-toggle" onclick="toggleTheme()">🌙</button>
-  </div>
 
-  <div class="nav-menu">
-    <a href="/dashboard/">Dashboard</a>
-    <a href="/api/manage/projects/" class="{% if title == 'Projets' %}active{% endif %}">Projets</a>
-    <a href="/api/manage/modules/" class="{% if title == 'Modules' %}active{% endif %}">Modules</a>
-    <a href="/api/manage/roles/" class="{% if title == 'Rôles' %}active{% endif %}">Rôles</a>
-    <a href="/api/manage/users/" class="{% if title == 'Utilisateurs' %}active{% endif %}">Utilisateurs</a>
-  </div>
+  /* Keep the NAME column from soaking up all leftover table width, so
+     other columns sit closer instead of drifting far right. */
+  table th:first-child, table td:first-child {
+    width: 240px;
+  }
+
+  /* Center specific columns by field name, without affecting other tables' columns */
+  table th[data-field="nombre_utilisateurs"],
+  table td[data-field="nombre_utilisateurs"] {
+    text-align: center;
+  }
+{% endblock %}
+
+{% block content %}
 
   <a class="btn-add" href="{% url add_url %}">+ Ajouter</a>
 
   <table>
-    <tr>
-      {% for f in fields %}<th>{{ f }}</th>{% endfor %}
-      <th>Actions</th>
-    </tr>
-    {% for row in rows %}
-    <tr>
-      {% for value in row.values %}<td>{{ value }}</td>{% endfor %}
-      <td>
-        <a class="action-link" href="{% url edit_url row.pk %}">Modifier</a>
-        <a class="delete-link" href="{% url delete_url row.pk %}" onclick="return confirm('Supprimer ?');">Supprimer</a>
-      </td>
-    </tr>
-    {% empty %}
-    <tr><td colspan="10" class="empty">Rien pour l'instant</td></tr>
-    {% endfor %}
+    <thead>
+      <tr>
+        {% for f in fields %}<th data-field="{{ f }}">{{ f }}</th>{% endfor %}
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        {% for cell in row.cells %}<td data-field="{{ cell.field }}">{{ cell.value }}</td>{% endfor %}
+        <td>
+          <a class="action-link" href="{% url edit_url row.pk %}">Modifier</a>
+          <a class="delete-link" href="{% url delete_url row.pk %}" onclick="return confirm('Supprimer ?');">Supprimer</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="10" class="empty">Rien pour l'instant</td></tr>
+      {% endfor %}
+    </tbody>
   </table>
-</div>
 
-<script>
-  const toggleBtn = document.getElementById('theme-toggle');
-  function applyIcon() {
-    const isLight = document.documentElement.classList.contains('light');
-    toggleBtn.textContent = isLight ? '☀️' : '🌙';
-  }
-  if (localStorage.getItem('umlm-theme') === 'light') { document.documentElement.classList.add('light'); }
-  applyIcon();
-  function toggleTheme() {
-    document.documentElement.classList.toggle('light');
-    localStorage.setItem('umlm-theme', document.documentElement.classList.contains('light') ? 'light' : 'dark');
-    applyIcon();
-  }
-</script>
-</body>
-</html>
+{% endblock %}

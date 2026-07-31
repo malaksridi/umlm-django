@@ -3,6 +3,18 @@ from django.db import models
 
 class Role(models.Model):
     name = models.CharField(max_length=50)  # admin, chef_de_projet, developpeur, direction_technique
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # Droits — un checkbox par droit distinct du cahier des charges (section 3)
+    droit_gestion_complete = models.BooleanField(default=False)              # Administrateur
+    droit_consultation = models.BooleanField(default=False)                  # Chef de projet
+    droit_alertes = models.BooleanField(default=False)                       # Chef de projet
+    droit_consultation_projets_assignes = models.BooleanField(default=False) # Développeur
+    droit_vue_globale_statistiques = models.BooleanField(default=False)      # Direction technique
+
+    @property
+    def nombre_utilisateurs(self):
+        return self.users.count()
 
     def __str__(self):
         return self.name

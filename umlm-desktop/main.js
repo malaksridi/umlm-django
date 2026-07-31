@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, session } = require('electron');
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -20,6 +20,7 @@ app.whenReady().then(() => {
   });
 });
 
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
+  await session.defaultSession.cookies.flushStore();
   if (process.platform !== 'darwin') app.quit();
 });

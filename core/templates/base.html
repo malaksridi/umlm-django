@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+<meta charset="UTF-8">
+<meta name="color-scheme" content="light">
+<script>
+  (function() {
+    const savedTheme = localStorage.getItem('umlm_theme');
+    const isDark = savedTheme === 'dark';
+    const html = document.documentElement;
+
+    html.classList.toggle('light', !isDark);
+    html.style.colorScheme = isDark ? 'dark' : 'light';
+
+    if (isDark) {
+      const meta = document.querySelector('meta[name="color-scheme"]');
+      if (meta) meta.setAttribute('content', 'dark');
+    }
+  })();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}UMLM{% endblock %}</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #0c0e13;
+    --bg-image: none;
+    --panel: #14171f;
+    --panel-border: rgba(255,255,255,0.07);
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.24);
+    --text: #eceef2;
+    --muted: #8b91a1;
+    --ok: #4ade80; --ok-bg: rgba(74,222,128,0.12);
+    --warn: #f5a94e; --warn-bg: rgba(245,169,78,0.12);
+    --danger: #f16565; --danger-bg: rgba(241,101,101,0.12);
+    --accent: #7c9cff; --accent-bg: rgba(124,156,255,0.12);
+    --chat-bubble-user: #3b82f6;
+    --chat-bubble-bot: rgba(255,255,255,0.05);
+    --font-heading: 'Space Grotesk', sans-serif;
+  }
+
+  html.light {
+    --bg: #f0f2fd;
+    --bg-image: radial-gradient(at 0% 0%, rgba(224, 231, 255, 0.8) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(237, 233, 254, 0.7) 0px, transparent 50%);
+    --panel: #ffffff;
+    --panel-border: rgba(224, 231, 255, 0.8);
+    --shadow: 0 10px 30px -10px rgba(79, 70, 229, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+    --text: #1e1b4b;
+    --muted: #64748b;
+
+    --ok: #16a34a; --ok-bg: #dcfce7;
+    --warn: #d97706; --warn-bg: #fef3c7;
+    --danger: #e11d48; --danger-bg: #ffe4e6;
+
+    --accent: #4f46e5; --accent-bg: #e0e7ff;
+    --chat-bubble-user: #4f46e5;
+    --chat-bubble-bot: #f1f5f9;
+    --font-heading: 'Space Grotesk', sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  /* Themed background driven purely by the .light class - no inline JS background
+     to fall out of sync, and no reload needed when toggling. */
+  html {
+    min-height: 100%;
+    background: var(--bg-image), var(--bg);
+    background-attachment: fixed;
+    transition: background 0.25s;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: transparent;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    padding: 48px 28px 90px;
+    transition: color 0.25s;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 980px; margin: 0 auto; position: relative; }
+
+  .top-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+
+  #theme-toggle {
+    background: var(--panel);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--shadow);
+    color: var(--muted);
+    border-radius: 10px;
+    width: 38px;
+    height: 38px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s, color 0.15s;
+  }
+  #theme-toggle:hover { color: var(--accent); transform: translateY(-1px); }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  h1 {
+    font-size: 32px; font-weight: 700; margin: 0 0 8px; letter-spacing: -0.01em;
+    font-family: var(--font-heading);
+    color: var(--text);
+  }
+  .sub { color: var(--muted); font-size: 13.5px; margin: 0; line-height: 1.5; }
+
+  /* Reserves the subtitle's height even on pages that don't use it,
+     so the nav-menu row always sits at the same vertical position. */
+  .subtitle-slot {
+    min-height: 20.5px;
+    margin-bottom: 24px;
+  }
+
+  .nav-menu {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 36px;
+  }
+  .nav-menu a {
+    text-decoration: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--shadow);
+    padding: 10px 18px;
+    border-radius: 10px;
+    transition: color 0.15s, transform 0.15s, background 0.15s;
+  }
+  .nav-menu a:hover { color: var(--accent); transform: translateY(-1px); }
+  .nav-menu a.active { color: var(--accent); background: var(--accent-bg); border-color: transparent; }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 44px;
+  }
+  .kpi {
+    background: var(--panel);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--shadow);
+    border-radius: 16px;
+    padding: 20px 20px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--muted);
+    opacity: 0.04;
+    pointer-events: none;
+  }
+  .kpi.warn::before { background: var(--warn); opacity: 0.09; }
+  .kpi.danger::before { background: var(--danger); opacity: 0.09; }
+  .kpi:not(.warn):not(.danger)::before { background: var(--accent); opacity: 0.06; }
+  .kpi-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    position: relative;
+  }
+  .kpi-label { color: var(--muted); font-size: 12.5px; margin-top: 6px; font-weight: 600; position: relative; }
+  .kpi:not(.warn):not(.danger) .kpi-value { color: var(--accent); }
+  .kpi.warn .kpi-value { color: var(--warn); }
+  .kpi.danger .kpi-value { color: var(--danger); }
+
+  .section-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin: 40px 0 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--panel-border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--panel);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--shadow);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  th, td { text-align: left; padding: 14px 18px; font-size: 13.5px; }
+  th {
+    color: var(--muted);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--panel-border);
+    background: var(--accent-bg);
+  }
+  html.light th { color: var(--accent); }
+  tr:not(:last-child) td { border-bottom: 1px solid var(--panel-border); }
+  tbody tr { transition: background 0.12s; }
+  tbody tr:hover { background: var(--accent-bg); }
+
+  /* Actions column (always last) sits above the Modifier link, and shrinks
+     to its content instead of splitting leftover table width evenly. */
+  table th:last-child, table td:last-child {
+    text-align: left;
+    width: 1%;
+    white-space: nowrap;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 11px 4px 9px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    margin: 2px 4px 2px 0;
+  }
+  .pill::before {
+    content: "";
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+  .pill.ok { background: var(--ok-bg); color: var(--ok); }
+  .pill.warn { background: var(--warn-bg); color: var(--warn); }
+  .pill.danger { background: var(--danger-bg); color: var(--danger); }
+  .pill.accent { background: var(--accent-bg); color: var(--accent); }
+  .empty { color: var(--muted); font-size: 13px; padding: 18px; font-style: italic; }
+
+  .alert-row td:first-child { border-left: 3px solid var(--danger); }
+  .alert-type { font-weight: 700; }
+
+  /* Mandatory Fixed Position Settings */
+  #chat-widget-wrapper {
+    position: fixed !important;
+    bottom: 24px !important;
+    right: 24px !important;
+    z-index: 999999 !important;
+    pointer-events: auto !important;
+  }
+
+  .chat-toggle-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #ffffff;
+    border: 1px solid var(--panel-border);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease;
+  }
+
+  .chat-toggle-btn:hover {
+    transform: scale(1.08);
+  }
+
+  .chat-toggle-btn:active {
+    transform: scale(0.95);
+  }
+
+  .chat-window {
+    position: absolute;
+    bottom: 66px;
+    right: 0;
+    width: 360px;
+    height: 480px;
+    background: var(--panel);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--panel-border);
+    border-radius: 16px;
+    box-shadow: var(--shadow), 0 20px 30px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(12px) scale(0.96);
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s;
+  }
+
+  /* Temporary class to disable animations during page navigation */
+  .chat-window.no-animation {
+    transition: none !important;
+  }
+
+  .chat-window.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+  }
+
+  .chat-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--panel-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--accent);
+    color: #ffffff;
+  }
+
+  .chat-header-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .chat-header h3 {
+    margin: 0;
+    font-size: 13.5px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: #ffffff;
+  }
+
+  .chat-close-btn {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 4px;
+    display: flex;
+    transition: opacity 0.15s ease;
+  }
+
+  .chat-close-btn:hover {
+    opacity: 0.8;
+  }
+
+  .chat-body {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 13px;
+  }
+
+  .chat-body::-webkit-scrollbar { width: 4px; }
+  .chat-body::-webkit-scrollbar-track { background: transparent; }
+  .chat-body::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius: 4px; }
+
+  @keyframes popIn {
+    0% { opacity: 0; transform: translateY(8px) scale(0.97); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .chat-msg {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    line-height: 1.45;
+    word-break: break-word;
+    animation: popIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .chat-msg.bot {
+    align-self: flex-start;
+    background: var(--chat-bubble-bot);
+    color: var(--text);
+    border: 1px solid var(--panel-border);
+    border-bottom-left-radius: 2px;
+  }
+
+  .chat-msg.user {
+    align-self: flex-end;
+    background: var(--chat-bubble-user);
+    color: #ffffff;
+    border-bottom-right-radius: 2px;
+  }
+
+  .typing-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 10px 14px;
+    background: var(--chat-bubble-bot);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    border-bottom-left-radius: 2px;
+    align-self: flex-start;
+    animation: popIn 0.2s ease forwards;
+  }
+
+  .typing-indicator span.dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.4;
+    animation: pulse 1.2s infinite ease-in-out;
+  }
+
+  .typing-indicator span.dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-indicator span.dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.15); }
+  }
+
+  .chat-footer {
+    padding: 12px;
+    border-top: 1px solid var(--panel-border);
+    display: flex;
+    gap: 8px;
+    margin: 0;
+  }
+
+  .chat-footer input {
+    flex: 1;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+
+  .chat-footer input:focus {
+    border-color: var(--accent);
+  }
+
+  .chat-footer button {
+    background: var(--accent);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 0 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.15s ease;
+  }
+
+  .chat-footer button:hover {
+    opacity: 0.9;
+  }
+
+  {% block extra_style %}{% endblock %}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top-row">
+    <div>
+      <div class="eyebrow">UMLM — GESTION</div>
+      <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+    </div>
+    <button id="theme-toggle" onclick="toggleTheme()" aria-label="Basculer le thème">☀️</button>
+  </div>
+  <div class="subtitle-slot">{% block subtitle %}<div class="sub">Gestion des projets, modules, rôles et accès.</div>{% endblock %}</div>
+
+  <div class="nav-menu">
+    <a href="{% block nav_dashboard_href %}/dashboard/{% endblock %}" {% block nav_dashboard %}{% endblock %}>Dashboard</a>
+    <a href="{% block nav_projects_href %}/api/manage/projects/{% endblock %}" {% block nav_projects %}{% endblock %}>Projets</a>
+    <a href="{% block nav_modules_href %}/api/manage/modules/{% endblock %}" {% block nav_modules %}{% endblock %}>Modules</a>
+    <a href="{% block nav_roles_href %}/api/manage/roles/{% endblock %}" {% block nav_roles %}{% endblock %}>Rôles</a>
+    <a href="{% block nav_users_href %}/api/manage/users/{% endblock %}" {% block nav_users %}{% endblock %}>Utilisateurs</a>
+  </div>
+
+  {% block content %}{% endblock %}
+
+</div>
+
+<!-- Chat Widget Wrapper -->
+<div id="chat-widget-wrapper">
+
+  <div class="chat-window" id="chatWindow">
+    <div class="chat-header">
+      <div class="chat-header-info">
+        <span class="pill ok" style="padding: 0; width: 8px; height: 8px; margin: 0;"></span>
+        <h3>Assistant UMLM</h3>
+      </div>
+      <button class="chat-close-btn" id="closeChatBtn" aria-label="Fermer le chat">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="chat-body" id="chatbox-messages">
+      <div class="chat-msg bot">
+        Bonjour ! Comment puis-je vous aider ?
+      </div>
+    </div>
+
+    <!-- INSTANT MESSAGE RESTORATION: Renders saved conversation before page paints -->
+    <script>
+      (function() {
+        try {
+          const history = JSON.parse(localStorage.getItem('umlm_chat_history')) || [];
+          if (history.length > 0) {
+            const container = document.getElementById('chatbox-messages');
+            if (container) {
+              container.innerHTML = history.map(msg => {
+                let text = typeof msg.text === 'string' ? msg.text : JSON.stringify(msg.text);
+                let safe = text
+                  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+                safe = safe
+                  .replace(/```([\s\S]*?)```/g, '<pre style="background:rgba(0,0,0,0.3); padding:8px; border-radius:6px; font-family:\'IBM Plex Mono\', monospace; font-size:11px; overflow-x:auto;"><code>$1</code></pre>')
+                  .replace(/`([^`]+)`/g, '<code style="background:rgba(0,0,0,0.2); padding:2px 5px; border-radius:4px; font-family:\'IBM Plex Mono\', monospace; font-size:11px;">$1</code>')
+                  .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                  .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+                  .replace(/\n/g, '<br>');
+                return `<div class="chat-msg ${msg.role}">${safe}</div>`;
+              }).join('');
+              container.scrollTop = container.scrollHeight;
+            }
+          }
+        } catch (e) {}
+      })();
+    </script>
+
+    <form class="chat-footer" id="chatbox-form">
+      <input type="text" id="chatbox-input" placeholder="Posez une question..." autocomplete="off" required />
+      <button type="submit" aria-label="Envoyer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </form>
+  </div>
+
+  <!-- INSTANT WINDOW STATE RESTORATION: Keeps window open without flash -->
+  <script>
+    if (localStorage.getItem('umlm_chat_open') === 'true') {
+      const win = document.getElementById('chatWindow');
+      if (win) win.classList.add('is-open', 'no-animation');
+    }
+  </script>
+
+  <button class="chat-toggle-btn" id="toggleChatBtn" aria-label="Ouvrir le chat">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  </button>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Force move widget directly under document body to avoid CSS positioning clipping
+    const widget = document.getElementById('chat-widget-wrapper');
+    if (widget && widget.parentElement !== document.body) {
+      document.body.appendChild(widget);
+    }
+
+    const isLight = document.documentElement.classList.contains('light');
+    document.getElementById('theme-toggle').textContent = isLight ? '☀️' : '🌙';
+
+    // Enable CSS transitions again after initial paint so button toggles still animate nicely
+    setTimeout(() => {
+      const win = document.getElementById('chatWindow');
+      if (win) win.classList.remove('no-animation');
+    }, 100);
+  });
+
+  function toggleTheme() {
+    const html = document.documentElement;
+    const isLight = html.classList.toggle('light');
+
+    localStorage.setItem('umlm_theme', isLight ? 'light' : 'dark');
+    html.style.colorScheme = isLight ? 'light' : 'dark';
+
+    document.getElementById('theme-toggle').textContent = isLight ? '☀️' : '🌙';
+    if (typeof drawChart === 'function') drawChart();
+  }
+</script>
+
+{% block extra_script %}{% endblock %}
+
+{% url 'chat_ai' as chat_ai_url %}
+<script>
+  const toggleChatBtn = document.getElementById('toggleChatBtn');
+  const closeChatBtn = document.getElementById('closeChatBtn');
+  const chatWindow = document.getElementById('chatWindow');
+  const chatForm = document.getElementById('chatbox-form');
+  const chatInput = document.getElementById('chatbox-input');
+  const messagesContainer = document.getElementById('chatbox-messages');
+  const chatWidgetWrapper = document.getElementById('chat-widget-wrapper');
+
+  const chatApiEndpoint = "{{ chat_ai_url|default:'/chat-ai/' }}";
+
+  // --- LOCALSTORAGE PERSISTENCE HELPERS ---
+  const STORAGE_KEY_HISTORY = 'umlm_chat_history';
+  const STORAGE_KEY_OPEN = 'umlm_chat_open';
+
+  function getSavedHistory() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY_HISTORY)) || [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveMessageToHistory(role, text) {
+    const history = getSavedHistory();
+    history.push({ role, text });
+    localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(history));
+  }
+
+  function initChatState() {
+    if (messagesContainer) {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+  }
+
+  function toggleChat() {
+    chatWindow.classList.remove('no-animation'); // Ensure animations work when toggled manually
+    chatWindow.classList.toggle('is-open');
+    const isOpen = chatWindow.classList.contains('is-open');
+    localStorage.setItem(STORAGE_KEY_OPEN, isOpen ? 'true' : 'false');
+
+    if (isOpen) {
+      setTimeout(() => chatInput.focus(), 100);
+    }
+  }
+
+  if (toggleChatBtn) toggleChatBtn.addEventListener('click', toggleChat);
+  if (closeChatBtn) closeChatBtn.addEventListener('click', toggleChat);
+
+  // --- Close when clicking outside of widget, UNLESS clicking on buttons/inputs/links ---
+  document.addEventListener('click', (e) => {
+    if (!chatWindow || !chatWindow.classList.contains('is-open')) return;
+
+    const isInsideWidget = chatWidgetWrapper && chatWidgetWrapper.contains(e.target);
+    const isClickable = e.target.closest('button, a, input, select, textarea, label, [role="button"]');
+
+    if (!isInsideWidget && !isClickable) {
+      chatWindow.classList.remove('is-open');
+      localStorage.setItem(STORAGE_KEY_OPEN, 'false');
+    }
+  });
+
+  // --- Close on Escape Key ---
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && chatWindow && chatWindow.classList.contains('is-open')) {
+      chatWindow.classList.remove('is-open');
+      localStorage.setItem(STORAGE_KEY_OPEN, 'false');
+    }
+  });
+
+  function formatChatMessage(text) {
+    if (typeof text !== 'string') text = JSON.stringify(text);
+
+    let safe = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+
+    safe = safe
+      .replace(/```([\s\S]*?)```/g, '<pre style="background:rgba(0,0,0,0.3); padding:8px; border-radius:6px; font-family:\'IBM Plex Mono\', monospace; font-size:11px; overflow-x:auto;"><code>$1</code></pre>')
+      .replace(/`([^`]+)`/g, '<code style="background:rgba(0,0,0,0.2); padding:2px 5px; border-radius:4px; font-family:\'IBM Plex Mono\', monospace; font-size:11px;">$1</code>')
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+      .replace(/\n/g, '<br>');
+
+    return safe;
+  }
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  async function sendMessage(e) {
+    if (e) e.preventDefault();
+
+    const messageText = chatInput.value.trim();
+    if (!messageText) return;
+
+    // Render & Save User Message
+    const userMsg = document.createElement('div');
+    userMsg.className = 'chat-msg user';
+    userMsg.innerHTML = formatChatMessage(messageText);
+    messagesContainer.appendChild(userMsg);
+
+    saveMessageToHistory('user', messageText);
+
+    chatInput.value = '';
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    // Show Loader
+    const typingElem = document.createElement('div');
+    typingElem.className = 'typing-indicator';
+    typingElem.id = 'active-loader';
+    typingElem.innerHTML = `
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    `;
+    messagesContainer.appendChild(typingElem);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    try {
+      const response = await fetch(chatApiEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken') || ''
+        },
+        body: JSON.stringify({ message: messageText })
+      });
+
+      const data = await response.json();
+
+      const activeLoader = document.getElementById('active-loader');
+      if (activeLoader) activeLoader.remove();
+
+      if (!response.ok) {
+        throw new Error(data.error || `Erreur serveur HTTP ${response.status}`);
+      }
+
+      const rawReply = data.reply || data.response || data.message || JSON.stringify(data);
+      const botMsg = document.createElement('div');
+      botMsg.className = 'chat-msg bot';
+      botMsg.innerHTML = formatChatMessage(rawReply);
+      messagesContainer.appendChild(botMsg);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+      // Save Bot Message
+      saveMessageToHistory('bot', rawReply);
+
+    } catch (err) {
+      const activeLoader = document.getElementById('active-loader');
+      if (activeLoader) activeLoader.remove();
+
+      console.error('Chat error:', err);
+
+      const errorMsg = document.createElement('div');
+      errorMsg.style.cssText = 'align-self: center; color: var(--danger); font-size: 11px; margin: 4px 0; padding: 4px 8px; background: rgba(255,0,0,0.1); border-radius: 4px;';
+      errorMsg.textContent = err.message || 'Erreur de connexion au serveur.';
+      messagesContainer.appendChild(errorMsg);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+  }
+
+  if (chatForm) {
+    chatForm.addEventListener('submit', sendMessage);
+  }
+
+  // Initialize saved state on page load
+  initChatState();
+</script>
+</body>
+</html>
